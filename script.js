@@ -1,4 +1,6 @@
 let blockSize = 50;
+let hardMode = false;
+let gameSpeed;
 let total_row;
 let total_col;
 let board;
@@ -47,8 +49,9 @@ function startGame() {
 
     placeFood();
     score = 0;
+    gameSpeed = 100;
 
-    gameInterval = setInterval(update, 1000 / 10);
+    gameInterval = setInterval(update, gameSpeed);
 
 }
 
@@ -83,6 +86,15 @@ function update() {
         snakeBody.push([foodX, foodY]);
         score++;
         placeFood();
+
+        if (hardMode == true) {
+            if (gameSpeed > 50) {
+                gameSpeed -= 10;
+            }
+            console.log(`Speed:` + gameSpeed);
+            clearInterval(gameInterval);
+            gameInterval = setInterval(update, gameSpeed);
+        }
     }
 
     for (let i = snakeBody.length - 1; i > 0; i--) {
@@ -92,6 +104,8 @@ function update() {
         snakeBody[0] = [snakeX, snakeY];
     }
     context.fillStyle = "green";
+
+
     snakeX += speedX * blockSize;
     snakeY += speedY * blockSize;
     context.fillRect(snakeX, snakeY, blockSize, blockSize);
@@ -100,6 +114,8 @@ function update() {
         context.fillRect(snakeBody[i][0] + (blockSize * .05), snakeBody[i][1] + (blockSize * .05), blockSize - (blockSize * .1), blockSize - (blockSize * .1));
     }
 
+
+    /* Game Ending */
     if (snakeX < 0 || snakeX > total_col * blockSize || snakeY < 0 || snakeY > total_row * blockSize) {
         gameOver = true;
         gameEnd();
