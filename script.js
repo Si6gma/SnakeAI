@@ -29,12 +29,15 @@ function startGame() {
 
     board = document.getElementById("board");
 
-    board.height = window.innerHeight;
-    board.width = window.innerWidth;
+    let borderSize = 2;  // Border width in pixels
+    board.height = Math.floor((window.innerHeight - borderSize * 2) / blockSize) * blockSize;
+    board.width = Math.floor((window.innerWidth - borderSize * 2) / blockSize) * blockSize;
 
     total_row = Math.floor(board.height / blockSize);
     total_col = Math.floor(board.width / blockSize);
 
+    console.log(`Window Size: ` + board.height + `:` + board.width);
+    console.log(`Grid Siz: ` + total_col + `:` + total_row);
     context = board.getContext("2d");
 
     // Randomly generate where snake starts 
