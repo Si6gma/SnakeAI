@@ -1,27 +1,33 @@
 let blockSize = 50;
 let hardMode = false;
 let showGrid = true;
+let borderSize = 2;
 let gameSpeed;
 let total_row;
 let total_col;
 let board;
 let context;
-let snakeX;
-let snakeY;
-let speedX;
-let speedY;
-let snakeBody;
-let foodX;
-let foodY;
 let gameOver;
 let gameInterval;
 let score;
-let borderSize = 2;
+
+let snake = {
+    x: null,
+    y: null,
+    speedX: null,
+    speedY: null,
+    body: []
+};
+
+let food = {
+    x: null,
+    y: null
+};
 
 /* Initialization */
 window.onload = function () {
     startGame();
-    document.addEventListener("keyup", changeDirection);
+    document.addEventListener("keydown", changeDirection);
 };
 
 function startGame() {
@@ -42,13 +48,13 @@ function startGame() {
     context = board.getContext("2d");
 
     // Randomly generate where snake starts 
-    snakeX = Math.floor(Math.random() * total_col) * blockSize;
-    snakeY = Math.floor(Math.random() * total_row) * blockSize;
+    snake.x = Math.floor(Math.random() * total_col) * blockSize;
+    snake.y = Math.floor(Math.random() * total_row) * blockSize;
 
-    speedX = 0;
-    speedY = 0;
+    snake.speedX = 0;
+    snake.speedy = 0;
 
-    snakeBody = [];
+    snake.body = [];
     gameOver = false;
 
     placeFood();
@@ -85,10 +91,10 @@ function update() {
     }
 
     context.fillStyle = "red";
-    context.fillRect(foodX + (blockSize * .1), foodY + (blockSize * .1), blockSize - (blockSize * .2), blockSize - (blockSize * .2));
+    context.fillRect(food.x + (blockSize * .1), food.y + (blockSize * .1), blockSize - (blockSize * .2), blockSize - (blockSize * .2));
 
-    if (snakeX == foodX && snakeY == foodY) {
-        snakeBody.push([foodX, foodY]);
+    if (snake.x == food.x && snake.y == food.y) {
+        snake.body.push([food.x, food.y]);
         score++;
         placeFood();
 
@@ -102,33 +108,33 @@ function update() {
         }
     }
 
-    for (let i = snakeBody.length - 1; i > 0; i--) {
-        snakeBody[i] = snakeBody[i - 1];
+    for (let i = snake.body.length - 1; i > 0; i--) {
+        snake.body[i] = snake.body[i - 1];
     }
-    if (snakeBody.length) {
-        snakeBody[0] = [snakeX, snakeY];
+    if (snake.body.length) {
+        snake.body[0] = [snake.x, snake.y];
     }
     context.fillStyle = "#3cc41c";
 
-    snakeX += speedX * blockSize;
-    snakeY += speedY * blockSize;
+    snake.x += snake.speedX * blockSize;
+    snake.y += snake.speedy * blockSize;
 
-    context.fillRect(snakeX, snakeY, blockSize, blockSize);
+    context.fillRect(snake.x, snake.y, blockSize, blockSize);
 
-    for (let i = 0; i < snakeBody.length; i++) {
+    for (let i = 0; i < snake.body.length; i++) {
         let bodySize = showGrid ? blockSize - (blockSize * .1) : blockSize;
         let offsetX = showGrid ? (blockSize * .05) : 0;
         let offsetY = showGrid ? (blockSize * .05) : 0;
-        context.fillRect(snakeBody[i][0] + offsetX, snakeBody[i][1] + offsetY, bodySize, bodySize);
+        context.fillRect(snake.body[i][0] + offsetX, snake.body[i][1] + offsetY, bodySize, bodySize);
     }
 
     /* Game Ending */
-    if (snakeX < 0 || snakeX > total_col * blockSize || snakeY < 0 || snakeY > total_row * blockSize) {
+    if (snake.x < 0 || snake.x > total_col * blockSize || snake.y < 0 || snake.y > total_row * blockSize) {
         gameOver = true;
         gameEnd();
     }
-    for (let i = 0; i < snakeBody.length; i++) {
-        if (snakeX == snakeBody[i][0] && snakeY == snakeBody[i][1]) {
+    for (let i = 0; i < snake.body.length; i++) {
+        if (snake.x == snake.body[i][0] && snake.y == snake.body[i][1]) {
             gameEnd();
         }
     }
@@ -136,29 +142,29 @@ function update() {
 
 /* Direction change logic */
 function changeDirection(movement) {
-    if (movement.code == "ArrowUp" && speedY != 1) {
-        speedX = 0;
-        speedY = -1;
-    } else if (movement.code == "ArrowDown" && speedY != -1) {
-        speedX = 0;
-        speedY = 1;
-    } else if (movement.code == "ArrowLeft" && speedX != 1) {
-        speedX = -1;
-        speedY = 0;
-    } else if (movement.code == "ArrowRight" && speedX != -1) {
-        speedX = 1;
-        speedY = 0;
+    if (movement.code == "ArrowUp" && snake.speedy != 1) {
+        snake.speedX = 0;
+        snake.speedy = -1;
+    } else if (movement.code == "ArrowDown" && snake.speedy != -1) {
+        snake.speedX = 0;
+        snake.speedy = 1;
+    } else if (movement.code == "ArrowLeft" && snake.speedX != 1) {
+        snake.speedX = -1;
+        snake.speedy = 0;
+    } else if (movement.code == "ArrowRight" && snake.speedX != -1) {
+        snake.speedX = 1;
+        snake.speedy = 0;
     }
 }
 
 /* Food placement logic */
 function placeFood() {
     while (true) {
-        foodX = Math.floor(Math.random() * total_col) * blockSize;
-        foodY = Math.floor(Math.random() * total_row) * blockSize;
+        food.x = Math.floor(Math.random() * total_col) * blockSize;
+        food.y = Math.floor(Math.random() * total_row) * blockSize;
 
-        let collision = snakeBody.some(function (bodyPart) {
-            return bodyPart[0] === foodX && bodyPart[1] === foodY;
+        let collision = snake.body.some(function (bodyPart) {
+            return bodyPart[0] === food.x && bodyPart[1] === food.y;
         });
 
         if (!collision) break;
