@@ -26,6 +26,8 @@ let food = {
 
 /* Initialization */
 window.onload = function () {
+    console.log(`Window Size: ` + board.height + `:` + board.width);
+    console.log(`Grid Size: ` + total_col + `:` + total_row);
     startGame();
     document.addEventListener("keydown", changeDirection);
 };
@@ -43,8 +45,7 @@ function startGame() {
     total_row = Math.floor(board.height / blockSize) - 1;
     total_col = Math.floor(board.width / blockSize) - 1;
 
-    console.log(`Window Size: ` + board.height + `:` + board.width);
-    console.log(`Grid Size: ` + total_col + `:` + total_row);
+
     context = board.getContext("2d");
 
     // Randomly generate where snake starts 
