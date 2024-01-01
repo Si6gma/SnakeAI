@@ -142,20 +142,21 @@ function update() {
 
 /* Direction change logic */
 function changeDirection(movement) {
-    if (movement.code == "ArrowUp" && snake.speedy != 1) {
+    if ((movement.code == "ArrowUp" || movement.code == "KeyW") && snake.speedy != 1) {
         snake.speedX = 0;
         snake.speedy = -1;
-    } else if (movement.code == "ArrowDown" && snake.speedy != -1) {
+    } else if ((movement.code == "ArrowDown" || movement.code == "KeyS") && snake.speedy != -1) {
         snake.speedX = 0;
         snake.speedy = 1;
-    } else if (movement.code == "ArrowLeft" && snake.speedX != 1) {
+    } else if ((movement.code == "ArrowLeft" || movement.code == "KeyA") && snake.speedX != 1) {
         snake.speedX = -1;
         snake.speedy = 0;
-    } else if (movement.code == "ArrowRight" && snake.speedX != -1) {
+    } else if ((movement.code == "ArrowRight" || movement.code == "KeyD") && snake.speedX != -1) {
         snake.speedX = 1;
         snake.speedy = 0;
     }
 }
+
 
 /* Food placement logic */
 function placeFood() {
