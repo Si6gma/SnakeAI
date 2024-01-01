@@ -1,5 +1,5 @@
 let blockSize = 50;
-let hardMode = false;
+let hardMode = true;
 let showGrid = true;
 let borderSize = 2;
 let gameSpeed;
