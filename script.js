@@ -3,8 +3,6 @@ const hardMode = true;
 const showGrid = true;
 const bodyCollision = false;
 
-const borderSize = 2;
-
 let gameSpeed;
 let total_row;
 let total_col;
@@ -52,8 +50,8 @@ function startGame() {
 
     board = document.getElementById("board");
 
-    board.height = Math.floor((window.innerHeight - borderSize * 2) / blockSize) * blockSize;
-    board.width = Math.floor((window.innerWidth - borderSize * 2) / blockSize) * blockSize;
+    board.height = Math.floor((window.innerHeight - 4) / blockSize) * blockSize;
+    board.width = Math.floor((window.innerWidth - 4) / blockSize) * blockSize;
 
     total_row = Math.floor(board.height / blockSize) - 1;
     total_col = Math.floor(board.width / blockSize) - 1;
@@ -65,7 +63,7 @@ function startGame() {
     snake.y = Math.floor(Math.random() * total_row) * blockSize;
 
     snake.speedX = 0;
-    snake.speedy = 0;
+    snake.speedY = 0;
 
     snake.body = [];
     gameOver = false;
@@ -77,14 +75,22 @@ function startGame() {
     gameInterval = setInterval(update, gameSpeed);
 }
 
-
-
 /* Game update logic */
 function update() {
     if (gameOver) {
         startGame(); // Restart the game
         return;
     }
+    drawGridlines();
+    drawFood();
+    checkSnakeFoodCollision();
+    updateSnakeBody();
+    moveSnake();
+    drawSnake();
+    checkAndEndGame();
+}
+
+function drawGridlines() {
     context.fillStyle = "black";
     context.fillRect(0, 0, board.width, board.height);
 
@@ -104,73 +110,59 @@ function update() {
             context.stroke();
         }
     }
+}
 
+function drawFood() {
     context.fillStyle = "red";
     context.fillRect(food.x + (blockSize * .1), food.y + (blockSize * .1), blockSize - (blockSize * .2), blockSize - (blockSize * .2));
+}
 
+function checkSnakeFoodCollision() {
     if (snake.x == food.x && snake.y == food.y) {
         snake.body.push([food.x, food.y]);
         score++;
         document.title = "Score: " + score;
         placeFood();
-
-        if (hardMode) {
-            if (gameSpeed > 50) {
-                gameSpeed -= 10;
-            }
-            clearInterval(gameInterval);
-            gameInterval = setInterval(update, gameSpeed);
-        }
+        adjustGameSpeed();
     }
+}
 
+function adjustGameSpeed() {
+    if (hardMode) {
+        if (gameSpeed > 50) {
+            gameSpeed -= 10;
+        }
+        clearInterval(gameInterval);
+        gameInterval = setInterval(update, gameSpeed);
+    }
+}
+
+function updateSnakeBody() {
     for (let i = snake.body.length - 1; i > 0; i--) {
         snake.body[i] = snake.body[i - 1];
     }
     if (snake.body.length) {
         snake.body[0] = [snake.x, snake.y];
     }
-    context.fillStyle = "#3cc41c";
+}
 
+function moveSnake() {
     snake.x += snake.speedX * blockSize;
-    snake.y += snake.speedy * blockSize;
+    snake.y += snake.speedY * blockSize;
+}
 
+function drawSnake() {
+    context.fillStyle = "#3cc41c";
     context.fillRect(snake.x, snake.y, blockSize, blockSize);
+    drawSnakeBody();
+}
 
+function drawSnakeBody() {
     for (let i = 0; i < snake.body.length; i++) {
         let bodySize = showGrid ? blockSize - (blockSize * .1) : blockSize;
         let offsetX = showGrid ? (blockSize * .05) : 0;
         let offsetY = showGrid ? (blockSize * .05) : 0;
         context.fillRect(snake.body[i][0] + offsetX, snake.body[i][1] + offsetY, bodySize, bodySize);
-    }
-
-    /* Game Ending */
-    if (snake.x < 0 || snake.x > total_col * blockSize || snake.y < 0 || snake.y > total_row * blockSize) {
-        gameOver = true;
-        gameEnd();
-    }
-    if (bodyCollision) {
-        for (let i = 0; i < snake.body.length; i++) {
-            if (snake.x == snake.body[i][0] && snake.y == snake.body[i][1]) {
-                gameEnd();
-            }
-        }
-    }
-}
-
-/* Direction change logic */
-function changeDirection(movement) {
-    if ((movement.code == "ArrowUp" || movement.code == "KeyW") && snake.speedy != 1) {
-        snake.speedX = 0;
-        snake.speedy = -1;
-    } else if ((movement.code == "ArrowDown" || movement.code == "KeyS") && snake.speedy != -1) {
-        snake.speedX = 0;
-        snake.speedy = 1;
-    } else if ((movement.code == "ArrowLeft" || movement.code == "KeyA") && snake.speedX != 1) {
-        snake.speedX = -1;
-        snake.speedy = 0;
-    } else if ((movement.code == "ArrowRight" || movement.code == "KeyD") && snake.speedX != -1) {
-        snake.speedX = 1;
-        snake.speedy = 0;
     }
 }
 
@@ -188,8 +180,36 @@ function placeFood() {
     }
 }
 
-function gameEnd() {
-    gameOver = true;
-    // alert(`Game Over, Total Score: ` + score);
-    console.log(`Score: ` + score);
+function checkAndEndGame() {
+    if (snake.x < 0 || snake.x > total_col * blockSize || snake.y < 0 || snake.y > total_row * blockSize) {
+        gameOver = true;
+    }
+    if (bodyCollision) {
+        for (let i = 0; i < snake.body.length; i++) {
+            if (snake.x == snake.body[i][0] && snake.y == snake.body[i][1]) {
+                gameOver = true;
+            }
+        }
+    }
+    if (gameOver) {
+        // alert(`Game Over, Total Score: ` + score);
+        console.log(`Score: ` + score);
+    }
+}
+
+/* Direction change logic */
+function changeDirection(movement) {
+    if ((movement.code == "ArrowUp" || movement.code == "KeyW") && snake.speedY != 1) {
+        snake.speedX = 0;
+        snake.speedY = -1;
+    } else if ((movement.code == "ArrowDown" || movement.code == "KeyS") && snake.speedY != -1) {
+        snake.speedX = 0;
+        snake.speedY = 1;
+    } else if ((movement.code == "ArrowLeft" || movement.code == "KeyA") && snake.speedX != 1) {
+        snake.speedX = -1;
+        snake.speedY = 0;
+    } else if ((movement.code == "ArrowRight" || movement.code == "KeyD") && snake.speedX != -1) {
+        snake.speedX = 1;
+        snake.speedY = 0;
+    }
 }
