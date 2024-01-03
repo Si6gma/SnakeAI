@@ -1,7 +1,10 @@
-let blockSize = 50;
-let hardMode = true;
-let showGrid = true;
-let borderSize = 2;
+const blockSize = 50;
+const hardMode = true;
+const showGrid = true;
+const bodyCollision = false;
+
+const borderSize = 2;
+
 let gameSpeed;
 let total_row;
 let total_col;
@@ -26,9 +29,20 @@ let food = {
 
 /* Initialization */
 window.onload = function () {
+    console.log(`Version: v2341`);
+
+    if (hardMode) {
+        console.log(`Hard mode enabled!`);
+    }
+    if (!showGrid) {
+        console.log(`Grid disabled!`);
+    };
+    if (!bodyCollision) {
+        console.log('Body collision disabled!');
+    }
+
     startGame();
     document.addEventListener("keydown", changeDirection);
-    console.log(`Version: v2341`);
 };
 
 function startGame() {
@@ -43,9 +57,6 @@ function startGame() {
 
     total_row = Math.floor(board.height / blockSize) - 1;
     total_col = Math.floor(board.width / blockSize) - 1;
-
-    console.log(`Window Size: ` + board.height + `:` + board.width);
-    console.log(`Grid Size: ` + total_col + `:` + total_row);
 
     context = board.getContext("2d");
 
@@ -65,6 +76,8 @@ function startGame() {
 
     gameInterval = setInterval(update, gameSpeed);
 }
+
+
 
 /* Game update logic */
 function update() {
@@ -98,13 +111,13 @@ function update() {
     if (snake.x == food.x && snake.y == food.y) {
         snake.body.push([food.x, food.y]);
         score++;
+        document.title = "Score: " + score;
         placeFood();
 
-        if (hardMode == true) {
+        if (hardMode) {
             if (gameSpeed > 50) {
                 gameSpeed -= 10;
             }
-            console.log(`Speed:` + gameSpeed);
             clearInterval(gameInterval);
             gameInterval = setInterval(update, gameSpeed);
         }
@@ -135,9 +148,11 @@ function update() {
         gameOver = true;
         gameEnd();
     }
-    for (let i = 0; i < snake.body.length; i++) {
-        if (snake.x == snake.body[i][0] && snake.y == snake.body[i][1]) {
-            gameEnd();
+    if (bodyCollision) {
+        for (let i = 0; i < snake.body.length; i++) {
+            if (snake.x == snake.body[i][0] && snake.y == snake.body[i][1]) {
+                gameEnd();
+            }
         }
     }
 }
@@ -159,7 +174,6 @@ function changeDirection(movement) {
     }
 }
 
-
 /* Food placement logic */
 function placeFood() {
     while (true) {
@@ -176,5 +190,6 @@ function placeFood() {
 
 function gameEnd() {
     gameOver = true;
-    alert(`Game Over, Total Score: ` + score);
+    // alert(`Game Over, Total Score: ` + score);
+    console.log(`Score: ` + score);
 }
