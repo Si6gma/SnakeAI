@@ -1,7 +1,7 @@
-const blockSize = 50;
-const hardMode = true;
-const showGrid = true;
-const bodyCollision = false;
+let blockSize = 50;
+let hardMode = false;
+let showGrid = true;
+let bodyCollision = false;
 
 let gameSpeed;
 let total_row;
@@ -26,7 +26,7 @@ let food = {
 };
 
 window.onload = function () {
-    console.log(`Version: v2341`);
+    console.log(`Version: v4`);
     logSettings();
     startGame();
     document.addEventListener("keydown", changeDirection);
@@ -170,10 +170,10 @@ function checkAndEndGame() {
 
 function changeDirection(movement) {
     const direction = movement.code.replace("Arrow", "").replace("Key", "");
-    if (direction == "Up" && snake.speedY != 1) setDirection(0, -1);
-    else if (direction == "Down" && snake.speedY != -1) setDirection(0, 1);
-    else if (direction == "Left" && snake.speedX != 1) setDirection(-1, 0);
-    else if (direction == "Right" && snake.speedX != -1) setDirection(1, 0);
+    if ((direction == "Up" || direction == "W") && snake.speedY != 1) setDirection(0, -1);
+    else if ((direction == "Down" || direction == "S") && snake.speedY != -1) setDirection(0, 1);
+    else if ((direction == "Left" || direction == "A") && snake.speedX != 1) setDirection(-1, 0);
+    else if ((direction == "Right" || direction == "D") && snake.speedX != -1) setDirection(1, 0);
 }
 
 function setDirection(x, y) {
