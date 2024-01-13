@@ -1,7 +1,7 @@
 let blockSize = 50;
 let hardMode = false;
 let showGrid = true;
-let bodyCollision = false;
+let bodyCollision = true;
 
 let gameSpeed;
 let total_row;
