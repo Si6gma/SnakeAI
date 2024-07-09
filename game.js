@@ -1,6 +1,9 @@
-export const blockSize = 50;
-const showGrid = true;
 
+export { boardProperties, snake, food };
+import { runAStar } from "./aStar.js";
+
+const showGrid = true;
+const blockSize = 50;
 
 let gameSpeed;
 let total_row;
@@ -11,17 +14,33 @@ let gameOver;
 let gameInterval;
 let score;
 
+let boardProperties = {
+
+    blockSize: 50,
+    height: null,
+    width: null,
+    x: null,
+    y: null
+
+
+};
+
 let snake = {
     x: null,
     y: null,
+    posX: null,
+    posY: null,
     speedX: null,
     speedY: null,
     body: []
+
 };
 
 let food = {
     x: null,
-    y: null
+    y: null,
+    posX: null,
+    posY: null
 };
 
 window.onload = function () {
@@ -38,13 +57,19 @@ function logSettings() {
 function startGame() {
     resetGame();
     placeFood();
+
     score = 0;
-    gameSpeed = 100;
-    gameInterval = setInterval(update, gameSpeed);
+    gameSpeed = 200;
+    // gameInterval = setInterval(update, gameSpeed);
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'h') {
+            update();
+        }
+    });
 }
 
 function resetGame() {
-    if (gameInterval) clearInterval(gameInterval);
+    // if (gameInterval) clearInterval(gameInterval);
     initializeBoard();
     initializeSnake();
     gameOver = false;
@@ -57,6 +82,13 @@ function initializeBoard() {
     total_row = Math.floor(board.height / blockSize) - 1;
     total_col = Math.floor(board.width / blockSize) - 1;
     context = board.getContext("2d");
+
+
+    boardProperties.height = board.height;
+    boardProperties.width = board.width;
+    boardProperties.posX = board.width / blockSize;
+    boardProperties.posY = board.height / blockSize;
+
 }
 
 function initializeSnake() {
@@ -79,6 +111,8 @@ function update() {
     updateSnakeBody();
     moveSnake();
     drawSnake();
+    updatePosition();
+    runAStar();
     checkAndEndGame();
 }
 
@@ -111,6 +145,16 @@ function drawVerticalLine(i) {
 function drawFood() {
     context.fillStyle = "red";
     context.fillRect(food.x + (blockSize * .1), food.y + (blockSize * .1), blockSize - (blockSize * .2), blockSize - (blockSize * .2));
+}
+
+function updatePosition() {
+    snake.posX = snake.x / blockSize + 1;
+    snake.posY = snake.y / blockSize + 1;
+    food.posX = food.x / blockSize + 1;
+    food.posY = food.y / blockSize + 1;
+
+    // console.log(snake);
+    // console.log(food);
 }
 
 function checkSnakeFoodCollision() {
