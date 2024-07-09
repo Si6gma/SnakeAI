@@ -54,8 +54,6 @@ How do we do this.
 
 // Main AStar Function
 function runAStar() {
-    console.log("hCost: " + hCost(snake.posX, snake.posY, food.posX, food.posY));
-
     // Initial Locate
     locateNeighbours(snake.posX, snake.posY);
     for (let i = 0; i < 4; i++) {
@@ -68,10 +66,13 @@ function runAStar() {
             neighbours[i].fCost = fCost(neighbours[i].hCost, neighbours[i].gCost);
         }
     }
+
+    console.log(food);
+    console.log("hCost: " + hCost(snake.posX, snake.posY, food.posX, food.posY));
+
     console.log(smallestFCost(neighbours));
 
 
-    console.log(neighbours);
 }
 
 // Mini Functions
@@ -143,24 +144,38 @@ function locateNeighbours(posX, posY) {
 }
 
 function smallestFCost(neighbours) {
+    // Determine the opposite movement based on the snake's current speed
+    const oppositeSpeed = { x: -snake.speedX, y: -snake.speedY };
 
-    // Find the minimum fCost value
     let minFCost = Infinity;
+    let minFCostNeighbours = [];
+
     for (let neighbour of neighbours) {
-        if (neighbour.fCost !== null && neighbour.fCost < minFCost) {
-            minFCost = neighbour.fCost;
+        // Ignore neighbors with posX or posY of 0
+        if (neighbour.posX === 0 || neighbour.posY === 0) continue;
+
+        // Calculate the relative movement direction to this neighbor
+        const moveX = neighbour.posX - snake.posX;
+        const moveY = neighbour.posY - snake.posY;
+
+        // Ignore the neighbor if it's in the opposite direction
+        if (moveX === oppositeSpeed.x && moveY === oppositeSpeed.y) continue;
+
+        if (neighbour.fCost !== null) {
+            if (neighbour.fCost < minFCost) {
+                minFCost = neighbour.fCost;
+                minFCostNeighbours = [neighbour];
+            } else if (neighbour.fCost === minFCost) {
+                minFCostNeighbours.push(neighbour);
+            }
         }
     }
 
-    // Filter the neighbours with the minimum fCost value
-    let minFCostNeighbours = neighbours.filter(neighbour => neighbour.fCost === minFCost);
-
-    // Return a random neighbour from the filtered list
-    if (minFCostNeighbours.length > 0) {
-        let randomIndex = Math.floor(Math.random() * minFCostNeighbours.length);
-        return minFCostNeighbours[randomIndex];
-    }
-
-    return null;
+    return minFCostNeighbours.length > 0
+        ? minFCostNeighbours[Math.floor(Math.random() * minFCostNeighbours.length)]
+        : null;
 }
+
+
+
 export { runAStar };
