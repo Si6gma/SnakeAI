@@ -13,6 +13,7 @@ You can view the A\* algorithm in action by going to [this link](https://si6gma.
 
 - **Snake Movement**: The snake is controlled automatically by the A\* algorithm.
 - **Dynamic Speed Control**: Use `H` to increase the speed and `J` to decrease the speed. Reset the speed by releasing the `H` or `J` key.
+- **Pause and Step**: Use `K` to pause and unpause the game. When the game is paused, pressing `J` will advance the game by one update cycle.
 - **Score Tracking**: The game tracks the player's score, which is displayed in the browser's title bar.
 
 ## A\* Algorithm Explanation
