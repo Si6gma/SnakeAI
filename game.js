@@ -12,6 +12,7 @@ let context;
 let gameOver;
 let gameInterval;
 let score;
+let paused = false;  // Add this line
 
 let boardProperties = {
     blockSize: 50,
@@ -44,6 +45,7 @@ window.onload = function () {
     startGame();
     document.addEventListener("keydown", changeSpeed);
     document.addEventListener("keyup", resetSpeed);
+    document.addEventListener("keydown", togglePause);  // Add this line
 };
 
 function logSettings() {
@@ -64,6 +66,7 @@ function resetGame() {
     initializeBoard();
     initializeSnake();
     gameOver = false;
+    paused = false;  // Add this line
 }
 
 function initializeBoard() {
@@ -90,6 +93,7 @@ function initializeSnake() {
 
 function update() {
     if (gameOver) return startGame();
+    if (paused) return;  // Add this line
     drawGridlines();
     drawFood();
     if (checkSnakeFoodCollision()) {
@@ -217,5 +221,16 @@ function resetSpeed(event) {
         clearInterval(gameInterval);
         gameSpeed = 50;
         gameInterval = setInterval(update, gameSpeed);
+    }
+}
+
+function togglePause(event) {  // Add this function
+    if (event.code === 'KeyK') {
+        paused = !paused;
+        if (!paused) {
+            gameInterval = setInterval(update, gameSpeed);
+        } else {
+            clearInterval(gameInterval);
+        }
     }
 }

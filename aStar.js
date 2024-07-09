@@ -14,8 +14,8 @@ function runAStar() {
         if (neighbours[i].posX != 0 && neighbours[i].posY != 0) {
             neighbours[i].hCost = hCost(neighbours[i].posX, neighbours[i].posY);
             neighbours[i].gCost = gCost(neighbours[i].posX, neighbours[i].posY);
-            neighbours[i].fCost = fCost(neighbours[i].hCost, neighbours[i].gCost);
             neighbours[i].openAreaCost = openAreaCost(neighbours[i].posX, neighbours[i].posY);
+            neighbours[i].fCost = fCost(neighbours[i].hCost, neighbours[i].gCost, neighbours[i].openAreaCost);
         }
     }
 
@@ -35,8 +35,9 @@ function gCost(blockX, blockY) {
     return Math.abs(snake.posX - blockX) + Math.abs(snake.posY - blockY);
 }
 
-function fCost(hCost, gCost) {
-    return hCost + gCost;
+function fCost(hCost, gCost, openAreaCost) {
+    // We subtract openAreaCost to prioritize cells with more open areas
+    return hCost + gCost - openAreaCost;
 }
 
 function locateNeighbours(posX, posY) {
