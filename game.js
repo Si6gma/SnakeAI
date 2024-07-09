@@ -1,8 +1,6 @@
 export const blockSize = 50;
-const hardMode = true;
-const showGrid = false;
-const bodyCollision = true;
-const pacManMode = true;
+const showGrid = true;
+
 
 let gameSpeed;
 let total_row;
@@ -34,9 +32,7 @@ window.onload = function () {
 };
 
 function logSettings() {
-    if (hardMode) console.log(`Hard mode enabled!`);
     if (!showGrid) console.log(`Grid disabled!`);
-    if (!bodyCollision) console.log('Body collision disabled!');
 }
 
 function startGame() {
@@ -79,7 +75,6 @@ function update() {
         score++;
         document.title = "Score: " + score;
         placeFood();
-        adjustGameSpeed();
     }
     updateSnakeBody();
     moveSnake();
@@ -122,14 +117,6 @@ function checkSnakeFoodCollision() {
     return snake.x == food.x && snake.y == food.y ? (snake.body.push([food.x, food.y]), true) : false;
 }
 
-function adjustGameSpeed() {
-    if (hardMode && gameSpeed > 10) {
-        gameSpeed -= 10;
-        clearInterval(gameInterval);
-        gameInterval = setInterval(update, gameSpeed);
-    }
-}
-
 function updateSnakeBody() {
     for (let i = snake.body.length - 1; i > 0; i--) snake.body[i] = snake.body[i - 1];
     if (snake.body.length) snake.body[0] = [snake.x, snake.y];
@@ -138,14 +125,6 @@ function updateSnakeBody() {
 function moveSnake() {
     snake.x += snake.speedX * blockSize;
     snake.y += snake.speedY * blockSize;
-
-    // Pac-Man Mode: If the snake hits the border, it appears on the other side
-    if (pacManMode) {
-        if (snake.x < 0) snake.x = total_col * blockSize;
-        else if (snake.x > total_col * blockSize) snake.x = 0;
-        else if (snake.y < 0) snake.y = total_row * blockSize;
-        else if (snake.y > total_row * blockSize) snake.y = 0;
-    }
 }
 
 function drawSnake() {
@@ -172,9 +151,8 @@ function placeFood() {
 }
 
 function checkAndEndGame() {
-    // In Pac-Man Mode, the game only ends if the snake collides with its own body
-    if (snake.x < 0 || snake.x > total_col * blockSize || snake.y < 0 || snake.y > total_row * blockSize) gameOver = !pacManMode;
-    if (bodyCollision && snake.body.some(bodyPart => snake.x == bodyPart[0] && snake.y == bodyPart[1])) gameOver = true;
+    if (snake.x < 0 || snake.x > total_col * blockSize || snake.y < 0 || snake.y > total_row * blockSize) gameOver = true;
+    if (snake.body.some(bodyPart => snake.x == bodyPart[0] && snake.y == bodyPart[1])) gameOver = true;
     if (gameOver) console.log(`Score: ` + score);
 }
 
