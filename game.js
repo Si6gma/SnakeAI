@@ -1,4 +1,3 @@
-
 export { boardProperties, snake, food };
 import { runAStar } from "./aStar.js";
 
@@ -15,14 +14,11 @@ let gameInterval;
 let score;
 
 let boardProperties = {
-
     blockSize: 50,
     height: null,
     width: null,
     x: null,
     y: null
-
-
 };
 
 let snake = {
@@ -33,7 +29,6 @@ let snake = {
     speedX: null,
     speedY: null,
     body: []
-
 };
 
 let food = {
@@ -59,17 +54,17 @@ function startGame() {
     placeFood();
 
     score = 0;
-    gameSpeed = 200;
-    // gameInterval = setInterval(update, gameSpeed);
-    document.addEventListener('keydown', function (event) {
-        if (event.key === 'h') {
-            update();
-        }
-    });
+    gameSpeed = 50;
+    gameInterval = setInterval(update, gameSpeed);
+    // document.addEventListener('keydown', function (event) {
+    //     if (event.key === 'h') {
+    //         update();
+    //     }
+    // });
 }
 
 function resetGame() {
-    // if (gameInterval) clearInterval(gameInterval);
+    if (gameInterval) clearInterval(gameInterval);
     initializeBoard();
     initializeSnake();
     gameOver = false;
@@ -83,12 +78,10 @@ function initializeBoard() {
     total_col = Math.floor(board.width / blockSize) - 1;
     context = board.getContext("2d");
 
-
     boardProperties.height = board.height;
     boardProperties.width = board.width;
     boardProperties.posX = board.width / blockSize;
     boardProperties.posY = board.height / blockSize;
-
 }
 
 function initializeSnake() {
@@ -108,11 +101,15 @@ function update() {
         document.title = "Score: " + score;
         placeFood();
     }
+
     updateSnakeBody();
     moveSnake();
     drawSnake();
     updatePosition();
-    runAStar();
+    changeDirectionAuto(runAStar());
+
+    console.log(snake);
+
     checkAndEndGame();
 }
 
@@ -152,9 +149,6 @@ function updatePosition() {
     snake.posY = snake.y / blockSize + 1;
     food.posX = food.x / blockSize + 1;
     food.posY = food.y / blockSize + 1;
-
-    // console.log(snake);
-    // console.log(food);
 }
 
 function checkSnakeFoodCollision() {
@@ -206,6 +200,13 @@ function changeDirection(movement) {
     else if ((direction == "Down" || direction == "S") && snake.speedY != -1) setDirection(0, 1);
     else if ((direction == "Left" || direction == "A") && snake.speedX != 1) setDirection(-1, 0);
     else if ((direction == "Right" || direction == "D") && snake.speedX != -1) setDirection(1, 0);
+}
+
+function changeDirectionAuto(direction) {
+    if (direction === "Up" && snake.speedY != 1) setDirection(0, -1);
+    else if (direction === "Down" && snake.speedY != -1) setDirection(0, 1);
+    else if (direction === "Left" && snake.speedX != 1) setDirection(-1, 0);
+    else if (direction === "Right" && snake.speedX != -1) setDirection(1, 0);
 }
 
 function setDirection(x, y) {

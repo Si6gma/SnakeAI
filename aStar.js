@@ -1,38 +1,12 @@
 import { boardProperties, snake, food } from './game.js';
 
+let counter = 0;
+
 let neighbours = [
-    {
-        position: null,
-        posX: null,
-        posY: null,
-        hCost: null,
-        gCost: null,
-        fCost: null
-    },
-    {
-        position: null,
-        posX: null,
-        posY: null,
-        hCost: null,
-        gCost: null,
-        fCost: null
-    },
-    {
-        position: null,
-        posX: null,
-        posY: null,
-        hCost: null,
-        gCost: null,
-        fCost: null
-    },
-    {
-        position: null,
-        posX: null,
-        posY: null,
-        hCost: null,
-        gCost: null,
-        fCost: null
-    }
+    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null },
+    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null },
+    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null },
+    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null }
 ];
 
 /*
@@ -67,12 +41,15 @@ function runAStar() {
         }
     }
 
-    console.log(food);
-    console.log("hCost: " + hCost(snake.posX, snake.posY, food.posX, food.posY));
 
-    console.log(smallestFCost(neighbours));
+    // console.log("hCost: " + hCost(snake.posX, snake.posY, food.posX, food.posY));
 
 
+    counter++;
+    console.log(counter);
+
+    let chaos = smallestFCost(neighbours);
+    return chaos.position;
 }
 
 // Mini Functions
