@@ -1,8 +1,8 @@
 export const blockSize = 50;
-const hardMode = true;
-const showGrid = false;
+const hardMode = false;
+const showGrid = true;
 const bodyCollision = true;
-const pacManMode = true;
+const pacManMode = false;
 
 let gameSpeed;
 let total_row;
