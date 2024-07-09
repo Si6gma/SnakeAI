@@ -42,7 +42,8 @@ window.onload = function () {
     console.log(`Version: v5`);
     logSettings();
     startGame();
-    document.addEventListener("keydown", changeDirection);
+    document.addEventListener("keydown", changeSpeed);
+    document.addEventListener("keyup", resetSpeed);
 };
 
 function logSettings() {
@@ -54,7 +55,7 @@ function startGame() {
     placeFood();
 
     score = 0;
-    gameSpeed = .000001;
+    gameSpeed = 50;
     gameInterval = setInterval(update, gameSpeed);
 }
 
@@ -187,14 +188,6 @@ function checkAndEndGame() {
     if (gameOver) console.log(`Score: ` + score);
 }
 
-function changeDirection(movement) {
-    const direction = movement.code.replace("Arrow", "").replace("Key", "");
-    if ((direction == "Up" || direction == "W") && snake.speedY != 1) setDirection(0, -1);
-    else if ((direction == "Down" || direction == "S") && snake.speedY != -1) setDirection(0, 1);
-    else if ((direction == "Left" || direction == "A") && snake.speedX != 1) setDirection(-1, 0);
-    else if ((direction == "Right" || direction == "D") && snake.speedX != -1) setDirection(1, 0);
-}
-
 function changeDirectionAuto(direction) {
     if (direction === "Up" && snake.speedY != 1) setDirection(0, -1);
     else if (direction === "Down" && snake.speedY != -1) setDirection(0, 1);
@@ -205,4 +198,24 @@ function changeDirectionAuto(direction) {
 function setDirection(x, y) {
     snake.speedX = x;
     snake.speedY = y;
+}
+
+function changeSpeed(event) {
+    if (event.code === 'KeyH') {
+        clearInterval(gameInterval);
+        gameSpeed = 25;
+        gameInterval = setInterval(update, gameSpeed);
+    } else if (event.code === 'KeyJ') {
+        clearInterval(gameInterval);
+        gameSpeed = 100;
+        gameInterval = setInterval(update, gameSpeed);
+    }
+}
+
+function resetSpeed(event) {
+    if ((event.code === 'KeyH') || (event.code === 'KeyJ')) {
+        clearInterval(gameInterval);
+        gameSpeed = 50;
+        gameInterval = setInterval(update, gameSpeed);
+    }
 }
