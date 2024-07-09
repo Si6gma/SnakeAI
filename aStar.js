@@ -1,10 +1,10 @@
 import { boardProperties, snake, food } from './game.js';
 
 let neighbours = [
-    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null },
-    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null },
-    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null },
-    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null }
+    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null, openAreaCost: null },
+    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null, openAreaCost: null },
+    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null, openAreaCost: null },
+    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null, openAreaCost: null }
 ];
 
 function runAStar() {
@@ -15,6 +15,7 @@ function runAStar() {
             neighbours[i].hCost = hCost(neighbours[i].posX, neighbours[i].posY);
             neighbours[i].gCost = gCost(neighbours[i].posX, neighbours[i].posY);
             neighbours[i].fCost = fCost(neighbours[i].hCost, neighbours[i].gCost);
+            neighbours[i].openAreaCost = openAreaCost(neighbours[i].posX, neighbours[i].posY);
         }
     }
 
@@ -58,10 +59,29 @@ function isPositionInSnakeBody(posX, posY) {
     return snake.body.some(bodyPart => bodyPart[0] === (posX - 1) * boardProperties.blockSize && bodyPart[1] === (posY - 1) * boardProperties.blockSize);
 }
 
+function openAreaCost(posX, posY) {
+    let freeSpaces = 0;
+    const possibleMoves = [
+        { x: posX, y: posY - 1 }, // Up
+        { x: posX, y: posY + 1 }, // Down
+        { x: posX - 1, y: posY }, // Left
+        { x: posX + 1, y: posY }  // Right
+    ];
+
+    for (let move of possibleMoves) {
+        if (move.x > 0 && move.y > 0 && move.x <= boardProperties.posX && move.y <= boardProperties.posY && !isPositionInSnakeBody(move.x, move.y)) {
+            freeSpaces++;
+        }
+    }
+
+    return freeSpaces;
+}
+
 function smallestFCost(neighbours) {
     const oppositeSpeed = { x: -snake.speedX, y: -snake.speedY };
 
     let minFCost = Infinity;
+    let maxOpenAreaCost = -Infinity;
     let minFCostNeighbours = [];
 
     for (let neighbour of neighbours) {
@@ -73,13 +93,12 @@ function smallestFCost(neighbours) {
         if (moveX === oppositeSpeed.x && moveY === oppositeSpeed.y) continue;
         if (isPositionInSnakeBody(neighbour.posX, neighbour.posY)) continue;
 
-        if (neighbour.fCost !== null) {
-            if (neighbour.fCost < minFCost) {
-                minFCost = neighbour.fCost;
-                minFCostNeighbours = [neighbour];
-            } else if (neighbour.fCost === minFCost) {
-                minFCostNeighbours.push(neighbour);
-            }
+        if (neighbour.fCost < minFCost || (neighbour.fCost === minFCost && neighbour.openAreaCost > maxOpenAreaCost)) {
+            minFCost = neighbour.fCost;
+            maxOpenAreaCost = neighbour.openAreaCost;
+            minFCostNeighbours = [neighbour];
+        } else if (neighbour.fCost === minFCost && neighbour.openAreaCost === maxOpenAreaCost) {
+            minFCostNeighbours.push(neighbour);
         }
     }
 

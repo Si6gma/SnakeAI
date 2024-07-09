@@ -54,7 +54,7 @@ function startGame() {
     placeFood();
 
     score = 0;
-    gameSpeed = 50;
+    gameSpeed = .000001;
     gameInterval = setInterval(update, gameSpeed);
 }
 
