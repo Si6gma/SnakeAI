@@ -20,6 +20,8 @@ function runAStar() {
     }
 
     const nextMove = smallestFCost(neighbours);
+    console.log("Next Move: " + nextMove.position);
+    console.log(neighbours);
     if (nextMove) {
         return nextMove.position;
     }

@@ -12,7 +12,7 @@ let context;
 let gameOver;
 let gameInterval;
 let score;
-let paused = false;  // Add this line
+let paused = false;
 
 let boardProperties = {
     blockSize: 50,
@@ -43,9 +43,8 @@ window.onload = function () {
     console.log(`Version: v5`);
     logSettings();
     startGame();
-    document.addEventListener("keydown", changeSpeed);
+    document.addEventListener("keydown", handleKeydown);
     document.addEventListener("keyup", resetSpeed);
-    document.addEventListener("keydown", togglePause);  // Add this line
 };
 
 function logSettings() {
@@ -66,7 +65,7 @@ function resetGame() {
     initializeBoard();
     initializeSnake();
     gameOver = false;
-    paused = false;  // Add this line
+    paused = false;
 }
 
 function initializeBoard() {
@@ -93,7 +92,11 @@ function initializeSnake() {
 
 function update() {
     if (gameOver) return startGame();
-    if (paused) return;  // Add this line
+    if (paused) return;
+    nextUpdate();
+}
+
+function nextUpdate() {
     drawGridlines();
     drawFood();
     if (checkSnakeFoodCollision()) {
@@ -204,33 +207,39 @@ function setDirection(x, y) {
     snake.speedY = y;
 }
 
+function handleKeydown(event) {
+    if (paused && event.code === 'KeyJ') {
+        nextUpdate();
+    } else if (!paused) {
+        changeSpeed(event);
+    }
+
+    if (event.code === 'KeyK') {
+        togglePause();
+    }
+}
+
 function changeSpeed(event) {
     if (event.code === 'KeyH') {
         clearInterval(gameInterval);
         gameSpeed = 25;
         gameInterval = setInterval(update, gameSpeed);
-    } else if (event.code === 'KeyJ') {
-        clearInterval(gameInterval);
-        gameSpeed = 100;
-        gameInterval = setInterval(update, gameSpeed);
     }
 }
 
 function resetSpeed(event) {
-    if ((event.code === 'KeyH') || (event.code === 'KeyJ')) {
+    if ((event.code === 'KeyH')) {
         clearInterval(gameInterval);
         gameSpeed = 50;
         gameInterval = setInterval(update, gameSpeed);
     }
 }
 
-function togglePause(event) {  // Add this function
-    if (event.code === 'KeyK') {
-        paused = !paused;
-        if (!paused) {
-            gameInterval = setInterval(update, gameSpeed);
-        } else {
-            clearInterval(gameInterval);
-        }
+function togglePause() {
+    paused = !paused;
+    if (!paused) {
+        gameInterval = setInterval(update, gameSpeed);
+    } else {
+        clearInterval(gameInterval);
     }
 }
