@@ -56,11 +56,6 @@ function startGame() {
     score = 0;
     gameSpeed = 50;
     gameInterval = setInterval(update, gameSpeed);
-    // document.addEventListener('keydown', function (event) {
-    //     if (event.key === 'h') {
-    //         update();
-    //     }
-    // });
 }
 
 function resetGame() {
@@ -107,8 +102,6 @@ function update() {
     drawSnake();
     updatePosition();
     changeDirectionAuto(runAStar());
-
-    console.log(snake);
 
     checkAndEndGame();
 }

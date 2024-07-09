@@ -1,7 +1,5 @@
 import { boardProperties, snake, food } from './game.js';
 
-let counter = 0;
-
 let neighbours = [
     { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null },
     { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null },
@@ -9,47 +7,22 @@ let neighbours = [
     { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null }
 ];
 
-/*
-gCost: How far away is it from the starting point
-hCost: How far away is it from the ending point
-fCost: gCost + hCost
-
-Choose lowest fCost
-
-
-How do we do this.
-1. Locate all the neighbours || DONE
-2. Run them through the hcost and gcost
-3. Run them through fCost
-4. Pick Lowest fCost
-5. Make that the main block
-6. Repeat until hCost = 0???
-*/
-
-// Main AStar Function
 function runAStar() {
     // Initial Locate
     locateNeighbours(snake.posX, snake.posY);
     for (let i = 0; i < 4; i++) {
-        if (neighbours[i].posX != 0) {
-
+        if (neighbours[i].posX != 0 && neighbours[i].posY != 0) {
             neighbours[i].hCost = hCost(neighbours[i].posX, neighbours[i].posY);
-
             neighbours[i].gCost = gCost(neighbours[i].posX, neighbours[i].posY);
-
             neighbours[i].fCost = fCost(neighbours[i].hCost, neighbours[i].gCost);
         }
     }
 
-
-    // console.log("hCost: " + hCost(snake.posX, snake.posY, food.posX, food.posY));
-
-
-    counter++;
-    console.log(counter);
-
-    let chaos = smallestFCost(neighbours);
-    return chaos.position;
+    const nextMove = smallestFCost(neighbours);
+    if (nextMove) {
+        return nextMove.position;
+    }
+    return null;
 }
 
 // Mini Functions
@@ -66,77 +39,39 @@ function fCost(hCost, gCost) {
 }
 
 function locateNeighbours(posX, posY) {
-    /* 
-    Neighbour Orientation
-    1. Up
-    2. Down
-    3. Left
-    4. Right
-    */
+    // Neighbour Orientation: Up, Down, Left, Right
+    neighbours[0] = { position: "Up", posX: posX, posY: posY - 1 };
+    neighbours[1] = { position: "Down", posX: posX, posY: posY + 1 };
+    neighbours[2] = { position: "Left", posX: posX - 1, posY: posY };
+    neighbours[3] = { position: "Right", posX: posX + 1, posY: posY };
 
-    // Up
-    if (posY != 1) {
-        neighbours[0].position = "Up";
-        neighbours[0].posX = posX;
-        neighbours[0].posY = posY - 1;
-
-    } else {
-        neighbours[0].posX = 0;
-        neighbours[0].posY = 0;
+    // Remove invalid neighbours
+    for (let i = 0; i < neighbours.length; i++) {
+        if (neighbours[i].posX <= 0 || neighbours[i].posY <= 0 || neighbours[i].posX > boardProperties.posX || neighbours[i].posY > boardProperties.posY) {
+            neighbours[i].posX = 0;
+            neighbours[i].posY = 0;
+        }
     }
+}
 
-    // Down
-    if (posY != boardProperties.posY) {
-        neighbours[1].position = "Down";
-        neighbours[1].posX = posX;
-        neighbours[1].posY = posY + 1;
-    } else {
-        neighbours[1].posX = 0;
-        neighbours[1].posY = 0;
-    }
-
-    // Left
-    if (posX != 1) {
-        neighbours[2].position = "Left";
-        neighbours[2].posX = posX - 1;
-        neighbours[2].posY = posY;
-
-    } else {
-        neighbours[2].posX = 0;
-        neighbours[2].posY = 0;
-    }
-
-    // Right
-    if (posX != boardProperties.posX) {
-        neighbours[3].position = "Right";
-        neighbours[3].posX = posX + 1;
-        neighbours[3].posY = posY;
-    } else {
-        neighbours[3].posX = 0;
-        neighbours[3].posY = 0;
-    }
-
-
-
+function isPositionInSnakeBody(posX, posY) {
+    return snake.body.some(bodyPart => bodyPart[0] === (posX - 1) * boardProperties.blockSize && bodyPart[1] === (posY - 1) * boardProperties.blockSize);
 }
 
 function smallestFCost(neighbours) {
-    // Determine the opposite movement based on the snake's current speed
     const oppositeSpeed = { x: -snake.speedX, y: -snake.speedY };
 
     let minFCost = Infinity;
     let minFCostNeighbours = [];
 
     for (let neighbour of neighbours) {
-        // Ignore neighbors with posX or posY of 0
         if (neighbour.posX === 0 || neighbour.posY === 0) continue;
 
-        // Calculate the relative movement direction to this neighbor
         const moveX = neighbour.posX - snake.posX;
         const moveY = neighbour.posY - snake.posY;
 
-        // Ignore the neighbor if it's in the opposite direction
         if (moveX === oppositeSpeed.x && moveY === oppositeSpeed.y) continue;
+        if (isPositionInSnakeBody(neighbour.posX, neighbour.posY)) continue;
 
         if (neighbour.fCost !== null) {
             if (neighbour.fCost < minFCost) {
@@ -152,7 +87,5 @@ function smallestFCost(neighbours) {
         ? minFCostNeighbours[Math.floor(Math.random() * minFCostNeighbours.length)]
         : null;
 }
-
-
 
 export { runAStar };
