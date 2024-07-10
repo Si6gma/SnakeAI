@@ -14,14 +14,11 @@ function runAStar() {
         if (neighbours[i].posX != 0 && neighbours[i].posY != 0) {
             neighbours[i].hCost = hCost(neighbours[i].posX, neighbours[i].posY);
             neighbours[i].gCost = gCost(neighbours[i].posX, neighbours[i].posY);
-            // neighbours[i].openAreaCost = openAreaCost(neighbours[i].posX, neighbours[i].posY);
-            neighbours[i].fCost = fCost(neighbours[i].hCost, neighbours[i].gCost, neighbours[i].openAreaCost);
+            neighbours[i].fCost = fCost(neighbours[i].hCost, neighbours[i].gCost);
         }
     }
 
-    const nextMove = smallestFCost(neighbours);
-    console.log("Next Move: " + nextMove.position);
-    console.log(neighbours);
+    const nextMove = findSmallestFCost(neighbours);
     if (nextMove) {
         return nextMove.position;
     }
@@ -38,8 +35,6 @@ function gCost(blockX, blockY) {
 }
 
 function fCost(hCost, gCost) {
-    // We subtract openAreaCost to prioritize cells with more open areas
-    // return hCost + gCost - openAreaCost;
     return hCost + gCost;
 }
 
@@ -60,35 +55,22 @@ function locateNeighbours(posX, posY) {
 }
 
 function isPositionInSnakeBody(posX, posY) {
-    return snake.body.some(bodyPart => bodyPart[0] === (posX - 1) * boardProperties.blockSize && bodyPart[1] === (posY - 1) * boardProperties.blockSize);
+    for (let i = 0; i < snake.body.length; i++) {
+        if (snake.body[i][0] === (posX - 1) * boardProperties.blockSize && snake.body[i][1] === (posY - 1) * boardProperties.blockSize) {
+            return true;
+        }
+    }
+    return false;
 }
 
-// function openAreaCost(posX, posY) {
-//     let freeSpaces = 0;
-//     const possibleMoves = [
-//         { x: posX, y: posY - 1 }, // Up
-//         { x: posX, y: posY + 1 }, // Down
-//         { x: posX - 1, y: posY }, // Left
-//         { x: posX + 1, y: posY }  // Right
-//     ];
-
-//     for (let move of possibleMoves) {
-//         if (move.x > 0 && move.y > 0 && move.x <= boardProperties.posX && move.y <= boardProperties.posY && !isPositionInSnakeBody(move.x, move.y)) {
-//             freeSpaces++;
-//         }
-//     }
-
-//     return freeSpaces;
-// }
-
-function smallestFCost(neighbours) {
+function findSmallestFCost(neighbours) {
     const oppositeSpeed = { x: -snake.speedX, y: -snake.speedY };
-
     let minFCost = Infinity;
-    let maxOpenAreaCost = -Infinity;
-    let minFCostNeighbours = [];
+    let bestNeighbour = null;
 
-    for (let neighbour of neighbours) {
+    for (let i = 0; i < neighbours.length; i++) {
+        const neighbour = neighbours[i];
+
         if (neighbour.posX === 0 || neighbour.posY === 0) continue;
 
         const moveX = neighbour.posX - snake.posX;
@@ -97,18 +79,13 @@ function smallestFCost(neighbours) {
         if (moveX === oppositeSpeed.x && moveY === oppositeSpeed.y) continue;
         if (isPositionInSnakeBody(neighbour.posX, neighbour.posY)) continue;
 
-        if (neighbour.fCost < minFCost || (neighbour.fCost === minFCost && neighbour.openAreaCost > maxOpenAreaCost)) {
+        if (neighbour.fCost < minFCost) {
             minFCost = neighbour.fCost;
-            maxOpenAreaCost = neighbour.openAreaCost;
-            minFCostNeighbours = [neighbour];
-        } else if (neighbour.fCost === minFCost && neighbour.openAreaCost === maxOpenAreaCost) {
-            minFCostNeighbours.push(neighbour);
+            bestNeighbour = neighbour;
         }
     }
 
-    return minFCostNeighbours.length > 0
-        ? minFCostNeighbours[Math.floor(Math.random() * minFCostNeighbours.length)]
-        : null;
+    return bestNeighbour;
 }
 
 export { runAStar };
