@@ -230,13 +230,17 @@ function handleKeydown(event) {
 function changeSpeed(event) {
     if (event.code === 'KeyH') {
         clearInterval(gameInterval);
+        gameSpeed = 25;
+        gameInterval = setInterval(update, gameSpeed);
+    } else if (event.code === 'KeyG') {
+        clearInterval(gameInterval);
         gameSpeed = 0;
         gameInterval = setInterval(update, gameSpeed);
     }
 }
 
 function resetSpeed(event) {
-    if ((event.code === 'KeyH')) {
+    if ((event.code === 'KeyH' || event.code === 'KeyG')) {
         clearInterval(gameInterval);
         gameSpeed = defaultGameSpeed;
         gameInterval = setInterval(update, gameSpeed);
