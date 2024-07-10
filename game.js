@@ -56,7 +56,7 @@ function startGame() {
     placeFood();
 
     score = 0;
-    gameSpeed = 50;
+    gameSpeed = 100;
     gameInterval = setInterval(update, gameSpeed);
 }
 
@@ -230,7 +230,7 @@ function changeSpeed(event) {
 function resetSpeed(event) {
     if ((event.code === 'KeyH')) {
         clearInterval(gameInterval);
-        gameSpeed = 50;
+        gameSpeed = 100;
         gameInterval = setInterval(update, gameSpeed);
     }
 }
