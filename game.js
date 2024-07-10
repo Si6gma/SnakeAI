@@ -3,6 +3,7 @@ import { runAStar } from "./aStar.js";
 
 const showGrid = true;
 const blockSize = 50;
+const defaultGameSpeed = 50;
 
 let gameSpeed;
 let total_row;
@@ -12,6 +13,7 @@ let context;
 let gameOver;
 let gameInterval;
 let score;
+let percentage;
 let paused = false;
 
 let boardProperties = {
@@ -56,7 +58,8 @@ function startGame() {
     placeFood();
 
     score = 0;
-    gameSpeed = 100;
+    percentage = 0;
+    gameSpeed = defaultGameSpeed;
     gameInterval = setInterval(update, gameSpeed);
 }
 
@@ -101,7 +104,9 @@ function nextUpdate() {
     drawFood();
     if (checkSnakeFoodCollision()) {
         score++;
+        percentage = Math.floor((score / (boardProperties.posX * boardProperties.posY)) * 100);
         document.title = "Score: " + score;
+
         placeFood();
     }
 
@@ -192,7 +197,10 @@ function placeFood() {
 function checkAndEndGame() {
     if (snake.x < 0 || snake.x > total_col * blockSize || snake.y < 0 || snake.y > total_row * blockSize) gameOver = true;
     if (snake.body.some(bodyPart => snake.x == bodyPart[0] && snake.y == bodyPart[1])) gameOver = true;
-    if (gameOver) console.log(`Score: ` + score);
+    if (gameOver) {
+        console.log(`Percentage: ` + percentage + "%");
+        console.log(boardProperties);
+    }
 }
 
 function changeDirectionAuto(direction) {
@@ -222,7 +230,7 @@ function handleKeydown(event) {
 function changeSpeed(event) {
     if (event.code === 'KeyH') {
         clearInterval(gameInterval);
-        gameSpeed = 25;
+        gameSpeed = 0;
         gameInterval = setInterval(update, gameSpeed);
     }
 }
@@ -230,7 +238,7 @@ function changeSpeed(event) {
 function resetSpeed(event) {
     if ((event.code === 'KeyH')) {
         clearInterval(gameInterval);
-        gameSpeed = 100;
+        gameSpeed = defaultGameSpeed;
         gameInterval = setInterval(update, gameSpeed);
     }
 }
