@@ -14,7 +14,7 @@ function runAStar() {
         if (neighbours[i].posX != 0 && neighbours[i].posY != 0) {
             neighbours[i].hCost = hCost(neighbours[i].posX, neighbours[i].posY);
             neighbours[i].gCost = gCost(neighbours[i].posX, neighbours[i].posY);
-            neighbours[i].openAreaCost = openAreaCost(neighbours[i].posX, neighbours[i].posY);
+            // neighbours[i].openAreaCost = openAreaCost(neighbours[i].posX, neighbours[i].posY);
             neighbours[i].fCost = fCost(neighbours[i].hCost, neighbours[i].gCost, neighbours[i].openAreaCost);
         }
     }
@@ -37,9 +37,10 @@ function gCost(blockX, blockY) {
     return Math.abs(snake.posX - blockX) + Math.abs(snake.posY - blockY);
 }
 
-function fCost(hCost, gCost, openAreaCost) {
+function fCost(hCost, gCost) {
     // We subtract openAreaCost to prioritize cells with more open areas
-    return hCost + gCost - openAreaCost;
+    // return hCost + gCost - openAreaCost;
+    return hCost + gCost;
 }
 
 function locateNeighbours(posX, posY) {
@@ -62,23 +63,23 @@ function isPositionInSnakeBody(posX, posY) {
     return snake.body.some(bodyPart => bodyPart[0] === (posX - 1) * boardProperties.blockSize && bodyPart[1] === (posY - 1) * boardProperties.blockSize);
 }
 
-function openAreaCost(posX, posY) {
-    let freeSpaces = 0;
-    const possibleMoves = [
-        { x: posX, y: posY - 1 }, // Up
-        { x: posX, y: posY + 1 }, // Down
-        { x: posX - 1, y: posY }, // Left
-        { x: posX + 1, y: posY }  // Right
-    ];
+// function openAreaCost(posX, posY) {
+//     let freeSpaces = 0;
+//     const possibleMoves = [
+//         { x: posX, y: posY - 1 }, // Up
+//         { x: posX, y: posY + 1 }, // Down
+//         { x: posX - 1, y: posY }, // Left
+//         { x: posX + 1, y: posY }  // Right
+//     ];
 
-    for (let move of possibleMoves) {
-        if (move.x > 0 && move.y > 0 && move.x <= boardProperties.posX && move.y <= boardProperties.posY && !isPositionInSnakeBody(move.x, move.y)) {
-            freeSpaces++;
-        }
-    }
+//     for (let move of possibleMoves) {
+//         if (move.x > 0 && move.y > 0 && move.x <= boardProperties.posX && move.y <= boardProperties.posY && !isPositionInSnakeBody(move.x, move.y)) {
+//             freeSpaces++;
+//         }
+//     }
 
-    return freeSpaces;
-}
+//     return freeSpaces;
+// }
 
 function smallestFCost(neighbours) {
     const oppositeSpeed = { x: -snake.speedX, y: -snake.speedY };
