@@ -1,10 +1,10 @@
 import { boardProperties, snake, food } from './game.js';
 
 let neighbours = [
-    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null, openAreaCost: null },
-    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null, openAreaCost: null },
-    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null, openAreaCost: null },
-    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null, openAreaCost: null }
+    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null },
+    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null },
+    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null },
+    { position: null, posX: null, posY: null, hCost: null, gCost: null, fCost: null }
 ];
 
 function runAStar() {
