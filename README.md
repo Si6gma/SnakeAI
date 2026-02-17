@@ -1,6 +1,5 @@
 <!--
-Suggested GitHub Topics:
-snake-game, a-star-algorithm, pathfinding, javascript-game, html5-canvas, ai, algorithm, vanilla-js, browser-game, interview-project
+GitHub Topics: snake-game, a-star-algorithm, pathfinding, javascript-game, html5-canvas, ai, algorithm, vanilla-js, browser-game
 -->
 
 # 🐍 SnakeAI
