@@ -515,19 +515,27 @@ describe('SnakeGame', () => {
             game.snake.x = -999; // Ensure snake head is not on board
             game.snake.y = -999;
             
+            // Mock Math.random to return the only free spot [100, 100] on first try
+            // (2/3, 2/3) * 3 * 50 = [100, 100]
+            const originalRandom = Math.random;
+            Math.random = jest.fn()
+                .mockReturnValueOnce(0.67) // For x: floor(0.67 * 3) = 2, so 2 * 50 = 100
+                .mockReturnValueOnce(0.67); // For y: floor(0.67 * 3) = 2, so 2 * 50 = 100
+            
             game.placeFood();
+            
+            // Restore original Math.random
+            Math.random = originalRandom;
+            
+            // Food should be at the only free spot
+            expect(game.food.x).toBe(100);
+            expect(game.food.y).toBe(100);
             
             // Food should not be placed on snake body
             const foodOnSnakeBody = game.snake.body.some(
                 bodyPart => bodyPart[0] === game.food.x && bodyPart[1] === game.food.y
             );
             expect(foodOnSnakeBody).toBe(false);
-            
-            // Food should be within bounds
-            expect(game.food.x).toBeGreaterThanOrEqual(0);
-            expect(game.food.x).toBeLessThan(3 * 50);
-            expect(game.food.y).toBeGreaterThanOrEqual(0);
-            expect(game.food.y).toBeLessThan(3 * 50);
         });
     });
 
