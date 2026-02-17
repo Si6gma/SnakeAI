@@ -1,257 +1,441 @@
-export { boardProperties, snake, food };
-import { runAStar } from "./aStar.js";
+/**
+ * Snake Game - Class-based implementation
+ * Handles game state, rendering, and game loop
+ */
 
-const showGrid = true;
-const blockSize = 50;
-const defaultGameSpeed = 50;
+import { AStar } from "./aStar.js";
 
-let gameSpeed;
-let total_row;
-let total_col;
-let board;
-let context;
-let gameOver;
-let gameInterval;
-let score;
-let percentage;
-let paused = false;
+class SnakeGame {
+    constructor(options = {}) {
+        this.showGrid = options.showGrid ?? true;
+        this.blockSize = options.blockSize ?? 50;
+        this.defaultGameSpeed = options.defaultGameSpeed ?? 50;
+        
+        this.gameSpeed = this.defaultGameSpeed;
+        this.totalRow = 0;
+        this.totalCol = 0;
+        this.board = null;
+        this.context = null;
+        this.gameOver = false;
+        this.gameInterval = null;
+        this.score = 0;
+        this.percentage = 0;
+        this.paused = false;
+        this.version = options.version ?? 'v6';
 
-let boardProperties = {
-    blockSize: 50,
-    height: null,
-    width: null,
-    x: null,
-    y: null
-};
+        this.boardProperties = {
+            blockSize: this.blockSize,
+            height: null,
+            width: null,
+            posX: null,
+            posY: null
+        };
 
-let snake = {
-    x: null,
-    y: null,
-    posX: null,
-    posY: null,
-    speedX: null,
-    speedY: null,
-    body: []
-};
+        this.snake = {
+            x: null,
+            y: null,
+            posX: null,
+            posY: null,
+            speedX: 0,
+            speedY: 0,
+            body: []
+        };
 
-let food = {
-    x: null,
-    y: null,
-    posX: null,
-    posY: null
-};
+        this.food = {
+            x: null,
+            y: null,
+            posX: null,
+            posY: null
+        };
 
-window.onload = function () {
-    console.log(`Version: v5`);
-    logSettings();
-    startGame();
-    document.addEventListener("keydown", handleKeydown);
-    document.addEventListener("keyup", resetSpeed);
-};
-
-function logSettings() {
-    if (!showGrid) console.log(`Grid disabled!`);
-}
-
-function startGame() {
-    resetGame();
-    placeFood();
-
-    score = 0;
-    percentage = 0;
-    gameSpeed = defaultGameSpeed;
-    gameInterval = setInterval(update, gameSpeed);
-}
-
-function resetGame() {
-    if (gameInterval) clearInterval(gameInterval);
-    initializeBoard();
-    initializeSnake();
-    gameOver = false;
-    paused = false;
-}
-
-function initializeBoard() {
-    board = document.getElementById("board");
-    board.height = Math.floor((window.innerHeight - 4) / blockSize) * blockSize;
-    board.width = Math.floor((window.innerWidth - 4) / blockSize) * blockSize;
-    total_row = Math.floor(board.height / blockSize) - 1;
-    total_col = Math.floor(board.width / blockSize) - 1;
-    context = board.getContext("2d");
-
-    boardProperties.height = board.height;
-    boardProperties.width = board.width;
-    boardProperties.posX = board.width / blockSize;
-    boardProperties.posY = board.height / blockSize;
-}
-
-function initializeSnake() {
-    snake.x = Math.floor(Math.random() * total_col) * blockSize;
-    snake.y = Math.floor(Math.random() * total_row) * blockSize;
-    snake.speedX = 0;
-    snake.speedY = 0;
-    snake.body = [];
-}
-
-function update() {
-    if (gameOver) return startGame();
-    if (paused) return;
-    nextUpdate();
-}
-
-function nextUpdate() {
-    drawGridlines();
-    drawFood();
-    if (checkSnakeFoodCollision()) {
-        score++;
-        percentage = Math.floor((score / (boardProperties.posX * boardProperties.posY)) * 100);
-        document.title = "Score: " + score;
-
-        placeFood();
+        this.keydownHandler = this.handleKeydown.bind(this);
+        this.keyupHandler = this.resetSpeed.bind(this);
     }
 
-    updateSnakeBody();
-    moveSnake();
-    drawSnake();
-    updatePosition();
-    changeDirectionAuto(runAStar());
+    /**
+     * Validate DOM element exists
+     * @param {string} id - Element ID
+     * @returns {HTMLElement}
+     * @throws {Error} If element not found
+     */
+    validateElement(id) {
+        const element = document.getElementById(id);
+        if (!element) {
+            throw new Error(`Required DOM element "${id}" not found`);
+        }
+        return element;
+    }
 
-    checkAndEndGame();
-}
+    /**
+     * Validate and sanitize numeric input
+     * @param {*} value - Input value
+     * @param {number} defaultValue - Default if invalid
+     * @param {number} min - Minimum allowed value
+     * @param {number} max - Maximum allowed value
+     * @returns {number}
+     */
+    validateNumber(value, defaultValue, min, max) {
+        const num = Number(value);
+        if (isNaN(num) || !isFinite(num)) {
+            return defaultValue;
+        }
+        return Math.max(min, Math.min(max, num));
+    }
 
-function drawGridlines() {
-    context.fillStyle = "black";
-    context.fillRect(0, 0, board.width, board.height);
-    if (showGrid) drawLines();
-}
+    /**
+     * Initialize and start the game
+     */
+    init() {
+        console.log(`Version: ${this.version}`);
+        this.logSettings();
+        this.setupEventListeners();
+        this.startGame();
+    }
 
-function drawLines() {
-    context.strokeStyle = "gray";
-    for (let i = 0; i <= total_row; i++) drawHorizontalLine(i);
-    for (let i = 0; i <= total_col; i++) drawVerticalLine(i);
-}
+    logSettings() {
+        if (!this.showGrid) console.log('Grid disabled!');
+    }
 
-function drawHorizontalLine(i) {
-    context.beginPath();
-    context.moveTo(0, i * blockSize);
-    context.lineTo(board.width, i * blockSize);
-    context.stroke();
-}
+    setupEventListeners() {
+        document.addEventListener('keydown', this.keydownHandler);
+        document.addEventListener('keyup', this.keyupHandler);
+    }
 
-function drawVerticalLine(i) {
-    context.beginPath();
-    context.moveTo(i * blockSize, 0);
-    context.lineTo(i * blockSize, board.height);
-    context.stroke();
-}
+    removeEventListeners() {
+        document.removeEventListener('keydown', this.keydownHandler);
+        document.removeEventListener('keyup', this.keyupHandler);
+    }
 
-function drawFood() {
-    context.fillStyle = "red";
-    context.fillRect(food.x + (blockSize * .1), food.y + (blockSize * .1), blockSize - (blockSize * .2), blockSize - (blockSize * .2));
-}
+    startGame() {
+        this.resetGame();
+        this.placeFood();
+        this.score = 0;
+        this.percentage = 0;
+        this.gameSpeed = this.defaultGameSpeed;
+        this.gameInterval = setInterval(() => this.update(), this.gameSpeed);
+    }
 
-function updatePosition() {
-    snake.posX = snake.x / blockSize + 1;
-    snake.posY = snake.y / blockSize + 1;
-    food.posX = food.x / blockSize + 1;
-    food.posY = food.y / blockSize + 1;
-}
+    resetGame() {
+        if (this.gameInterval) {
+            clearInterval(this.gameInterval);
+            this.gameInterval = null;
+        }
+        this.initializeBoard();
+        this.initializeSnake();
+        this.gameOver = false;
+        this.paused = false;
+    }
 
-function checkSnakeFoodCollision() {
-    return snake.x == food.x && snake.y == food.y ? (snake.body.push([food.x, food.y]), true) : false;
-}
+    initializeBoard() {
+        this.board = this.validateElement('board');
+        
+        const windowHeight = this.validateNumber(window.innerHeight, 600, 200, 4000);
+        const windowWidth = this.validateNumber(window.innerWidth, 800, 200, 4000);
+        
+        this.board.height = Math.floor((windowHeight - 4) / this.blockSize) * this.blockSize;
+        this.board.width = Math.floor((windowWidth - 4) / this.blockSize) * this.blockSize;
+        this.totalRow = Math.floor(this.board.height / this.blockSize) - 1;
+        this.totalCol = Math.floor(this.board.width / this.blockSize) - 1;
+        
+        this.context = this.board.getContext('2d');
+        if (!this.context) {
+            throw new Error('Failed to get 2D context from canvas');
+        }
 
-function updateSnakeBody() {
-    for (let i = snake.body.length - 1; i > 0; i--) snake.body[i] = snake.body[i - 1];
-    if (snake.body.length) snake.body[0] = [snake.x, snake.y];
-}
+        this.boardProperties.height = this.board.height;
+        this.boardProperties.width = this.board.width;
+        this.boardProperties.posX = this.board.width / this.blockSize;
+        this.boardProperties.posY = this.board.height / this.blockSize;
+    }
 
-function moveSnake() {
-    snake.x += snake.speedX * blockSize;
-    snake.y += snake.speedY * blockSize;
-}
+    initializeSnake() {
+        if (this.totalCol <= 0 || this.totalRow <= 0) {
+            throw new Error('Invalid board dimensions');
+        }
+        this.snake.x = Math.floor(Math.random() * this.totalCol) * this.blockSize;
+        this.snake.y = Math.floor(Math.random() * this.totalRow) * this.blockSize;
+        this.snake.speedX = 0;
+        this.snake.speedY = 0;
+        this.snake.body = [];
+    }
 
-function drawSnake() {
-    context.fillStyle = "#3cc41c";
-    context.fillRect(snake.x, snake.y, blockSize, blockSize);
-    drawSnakeBody();
-}
+    update() {
+        if (this.gameOver) {
+            this.startGame();
+            return;
+        }
+        if (this.paused) return;
+        this.nextUpdate();
+    }
 
-function drawSnakeBody() {
-    for (let i = 0; i < snake.body.length; i++) {
-        let bodySize = showGrid ? blockSize - (blockSize * .1) : blockSize;
-        let offsetX = showGrid ? (blockSize * .05) : 0;
-        let offsetY = showGrid ? (blockSize * .05) : 0;
-        context.fillRect(snake.body[i][0] + offsetX, snake.body[i][1] + offsetY, bodySize, bodySize);
+    nextUpdate() {
+        this.drawGridlines();
+        this.drawFood();
+        
+        if (this.checkSnakeFoodCollision()) {
+            this.score++;
+            const totalCells = this.boardProperties.posX * this.boardProperties.posY;
+            this.percentage = Math.floor((this.score / totalCells) * 100);
+            document.title = `Score: ${this.score}`;
+            this.placeFood();
+        }
+
+        this.updateSnakeBody();
+        this.moveSnake();
+        this.drawSnake();
+        this.updatePosition();
+        
+        const direction = this.getNextDirection();
+        if (direction) {
+            this.changeDirectionAuto(direction);
+        }
+
+        this.checkAndEndGame();
+    }
+
+    getNextDirection() {
+        try {
+            const aStar = new AStar(this.boardProperties, this.snake, this.food);
+            return aStar.run();
+        } catch (error) {
+            console.error('A* error:', error);
+            return null;
+        }
+    }
+
+    drawGridlines() {
+        if (!this.context) return;
+        this.context.fillStyle = 'black';
+        this.context.fillRect(0, 0, this.board.width, this.board.height);
+        if (this.showGrid) this.drawLines();
+    }
+
+    drawLines() {
+        this.context.strokeStyle = 'gray';
+        for (let i = 0; i <= this.totalRow; i++) this.drawHorizontalLine(i);
+        for (let i = 0; i <= this.totalCol; i++) this.drawVerticalLine(i);
+    }
+
+    drawHorizontalLine(i) {
+        this.context.beginPath();
+        this.context.moveTo(0, i * this.blockSize);
+        this.context.lineTo(this.board.width, i * this.blockSize);
+        this.context.stroke();
+    }
+
+    drawVerticalLine(i) {
+        this.context.beginPath();
+        this.context.moveTo(i * this.blockSize, 0);
+        this.context.lineTo(i * this.blockSize, this.board.height);
+        this.context.stroke();
+    }
+
+    drawFood() {
+        if (!this.context) return;
+        this.context.fillStyle = 'red';
+        const padding = this.blockSize * 0.1;
+        this.context.fillRect(
+            this.food.x + padding,
+            this.food.y + padding,
+            this.blockSize - padding * 2,
+            this.blockSize - padding * 2
+        );
+    }
+
+    updatePosition() {
+        this.snake.posX = this.snake.x / this.blockSize + 1;
+        this.snake.posY = this.snake.y / this.blockSize + 1;
+        this.food.posX = this.food.x / this.blockSize + 1;
+        this.food.posY = this.food.y / this.blockSize + 1;
+    }
+
+    checkSnakeFoodCollision() {
+        if (this.snake.x === this.food.x && this.snake.y === this.food.y) {
+            this.snake.body.push([this.food.x, this.food.y]);
+            return true;
+        }
+        return false;
+    }
+
+    updateSnakeBody() {
+        for (let i = this.snake.body.length - 1; i > 0; i--) {
+            this.snake.body[i] = this.snake.body[i - 1];
+        }
+        if (this.snake.body.length) {
+            this.snake.body[0] = [this.snake.x, this.snake.y];
+        }
+    }
+
+    moveSnake() {
+        this.snake.x += this.snake.speedX * this.blockSize;
+        this.snake.y += this.snake.speedY * this.blockSize;
+    }
+
+    drawSnake() {
+        if (!this.context) return;
+        this.context.fillStyle = '#3cc41c';
+        this.context.fillRect(this.snake.x, this.snake.y, this.blockSize, this.blockSize);
+        this.drawSnakeBody();
+    }
+
+    drawSnakeBody() {
+        for (let i = 0; i < this.snake.body.length; i++) {
+            const bodySize = this.showGrid ? this.blockSize - (this.blockSize * 0.1) : this.blockSize;
+            const offset = this.showGrid ? (this.blockSize * 0.05) : 0;
+            this.context.fillRect(
+                this.snake.body[i][0] + offset,
+                this.snake.body[i][1] + offset,
+                bodySize,
+                bodySize
+            );
+        }
+    }
+
+    placeFood() {
+        if (this.totalCol <= 0 || this.totalRow <= 0) return;
+        
+        let attempts = 0;
+        const maxAttempts = this.totalCol * this.totalRow;
+        
+        while (attempts < maxAttempts) {
+            this.food.x = Math.floor(Math.random() * this.totalCol) * this.blockSize;
+            this.food.y = Math.floor(Math.random() * this.totalRow) * this.blockSize;
+            
+            const onSnakeBody = this.snake.body.some(
+                bodyPart => bodyPart[0] === this.food.x && bodyPart[1] === this.food.y
+            );
+            const onSnakeHead = this.snake.x === this.food.x && this.snake.y === this.food.y;
+            
+            if (!onSnakeBody && !onSnakeHead) break;
+            attempts++;
+        }
+    }
+
+    checkAndEndGame() {
+        const outOfBounds = 
+            this.snake.x < 0 || 
+            this.snake.x > this.totalCol * this.blockSize || 
+            this.snake.y < 0 || 
+            this.snake.y > this.totalRow * this.blockSize;
+
+        const selfCollision = this.snake.body.some(
+            bodyPart => this.snake.x === bodyPart[0] && this.snake.y === bodyPart[1]
+        );
+
+        if (outOfBounds || selfCollision) {
+            this.gameOver = true;
+            console.log(`Percentage: ${this.percentage}%`);
+            console.log(this.boardProperties);
+        }
+    }
+
+    changeDirectionAuto(direction) {
+        if (direction === 'Up' && this.snake.speedY !== 1) this.setDirection(0, -1);
+        else if (direction === 'Down' && this.snake.speedY !== -1) this.setDirection(0, 1);
+        else if (direction === 'Left' && this.snake.speedX !== 1) this.setDirection(-1, 0);
+        else if (direction === 'Right' && this.snake.speedX !== -1) this.setDirection(1, 0);
+    }
+
+    setDirection(x, y) {
+        this.snake.speedX = x;
+        this.snake.speedY = y;
+    }
+
+    handleKeydown(event) {
+        if (!event || !event.code) return;
+        
+        if (this.paused && event.code === 'KeyJ') {
+            this.nextUpdate();
+        } else if (!this.paused) {
+            this.changeSpeed(event);
+        }
+
+        if (event.code === 'KeyK') {
+            this.togglePause();
+        }
+    }
+
+    changeSpeed(event) {
+        if (event.code === 'KeyH') {
+            this.setGameSpeed(25);
+        } else if (event.code === 'KeyG') {
+            this.setGameSpeed(0);
+        }
+    }
+
+    setGameSpeed(speed) {
+        if (this.gameInterval) {
+            clearInterval(this.gameInterval);
+        }
+        this.gameSpeed = speed;
+        this.gameInterval = setInterval(() => this.update(), this.gameSpeed);
+    }
+
+    resetSpeed(event) {
+        if (!event || !event.code) return;
+        
+        if (event.code === 'KeyH' || event.code === 'KeyG') {
+            this.setGameSpeed(this.defaultGameSpeed);
+        }
+    }
+
+    togglePause() {
+        this.paused = !this.paused;
+        if (!this.paused) {
+            this.gameInterval = setInterval(() => this.update(), this.gameSpeed);
+        } else {
+            if (this.gameInterval) {
+                clearInterval(this.gameInterval);
+                this.gameInterval = null;
+            }
+        }
+    }
+
+    /**
+     * Clean up resources
+     */
+    destroy() {
+        this.removeEventListeners();
+        if (this.gameInterval) {
+            clearInterval(this.gameInterval);
+            this.gameInterval = null;
+        }
+    }
+
+    /**
+     * Get current game state (useful for testing)
+     */
+    getState() {
+        return {
+            snake: { ...this.snake },
+            food: { ...this.food },
+            boardProperties: { ...this.boardProperties },
+            score: this.score,
+            gameOver: this.gameOver,
+            paused: this.paused
+        };
     }
 }
 
-function placeFood() {
-    while (true) {
-        food.x = Math.floor(Math.random() * total_col) * blockSize;
-        food.y = Math.floor(Math.random() * total_row) * blockSize;
-        if (!snake.body.some(bodyPart => bodyPart[0] === food.x && bodyPart[1] === food.y)) break;
+// Backward compatibility - auto-initialize when DOM is ready
+let gameInstance = null;
+
+function initGame() {
+    try {
+        gameInstance = new SnakeGame();
+        gameInstance.init();
+    } catch (error) {
+        console.error('Failed to initialize game:', error);
     }
 }
 
-function checkAndEndGame() {
-    if (snake.x < 0 || snake.x > total_col * blockSize || snake.y < 0 || snake.y > total_row * blockSize) gameOver = true;
-    if (snake.body.some(bodyPart => snake.x == bodyPart[0] && snake.y == bodyPart[1])) gameOver = true;
-    if (gameOver) {
-        console.log(`Percentage: ` + percentage + "%");
-        console.log(boardProperties);
-    }
-}
-
-function changeDirectionAuto(direction) {
-    if (direction === "Up" && snake.speedY != 1) setDirection(0, -1);
-    else if (direction === "Down" && snake.speedY != -1) setDirection(0, 1);
-    else if (direction === "Left" && snake.speedX != 1) setDirection(-1, 0);
-    else if (direction === "Right" && snake.speedX != -1) setDirection(1, 0);
-}
-
-function setDirection(x, y) {
-    snake.speedX = x;
-    snake.speedY = y;
-}
-
-function handleKeydown(event) {
-    if (paused && event.code === 'KeyJ') {
-        nextUpdate();
-    } else if (!paused) {
-        changeSpeed(event);
-    }
-
-    if (event.code === 'KeyK') {
-        togglePause();
-    }
-}
-
-function changeSpeed(event) {
-    if (event.code === 'KeyH') {
-        clearInterval(gameInterval);
-        gameSpeed = 25;
-        gameInterval = setInterval(update, gameSpeed);
-    } else if (event.code === 'KeyG') {
-        clearInterval(gameInterval);
-        gameSpeed = 0;
-        gameInterval = setInterval(update, gameSpeed);
-    }
-}
-
-function resetSpeed(event) {
-    if ((event.code === 'KeyH' || event.code === 'KeyG')) {
-        clearInterval(gameInterval);
-        gameSpeed = defaultGameSpeed;
-        gameInterval = setInterval(update, gameSpeed);
-    }
-}
-
-function togglePause() {
-    paused = !paused;
-    if (!paused) {
-        gameInterval = setInterval(update, gameSpeed);
+if (typeof window !== 'undefined') {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initGame);
     } else {
-        clearInterval(gameInterval);
+        initGame();
     }
 }
+
+export { SnakeGame, initGame };
+export default SnakeGame;
