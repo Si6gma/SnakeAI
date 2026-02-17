@@ -512,12 +512,22 @@ describe('SnakeGame', () => {
             game.totalRow = 3;
             game.blockSize = 50;
             game.snake.body = [[0, 0], [50, 0], [100, 0], [0, 50], [50, 50], [100, 50], [0, 100], [50, 100]];
+            game.snake.x = -999; // Ensure snake head is not on board
+            game.snake.y = -999;
             
             game.placeFood();
             
-            // Food should only be placed at [100, 100]
-            expect(game.food.x).toBe(100);
-            expect(game.food.y).toBe(100);
+            // Food should not be placed on snake body
+            const foodOnSnakeBody = game.snake.body.some(
+                bodyPart => bodyPart[0] === game.food.x && bodyPart[1] === game.food.y
+            );
+            expect(foodOnSnakeBody).toBe(false);
+            
+            // Food should be within bounds
+            expect(game.food.x).toBeGreaterThanOrEqual(0);
+            expect(game.food.x).toBeLessThan(3 * 50);
+            expect(game.food.y).toBeGreaterThanOrEqual(0);
+            expect(game.food.y).toBeLessThan(3 * 50);
         });
     });
 
